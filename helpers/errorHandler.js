@@ -1,5 +1,18 @@
 import { BSONTypeError } from "bson";
 
+export class InvalidRequestError extends Error {
+    constructor(message) {
+        super(message);
+        this.name = 'InvalidRequestError';
+    }
+}
+export class NotFoundError extends Error {
+    constructor(resource) {
+        super(resource + ' Not Found');
+        this.name = 'NotFoundError';
+    }
+}
+
 const respond = (response) => {
     return (statusCode, message) => {
         if (message)
@@ -20,9 +33,21 @@ export default (error, req, res, next) => {
 
     switch(error.constructor) {
         case BSONTypeError:
-            return resp(400, 'Invalid id');
+            return resp(400, 'id should be a 12-byte BSON ObjectId');
+        case InvalidRequestError:
+            return resp(400, error.message);
+        case NotFoundError:
+            return resp(404, error.message);
         default :
-            console.log(error);
+            console.log(error.constructor);
+            console.log(error.message)
             return resp(500, 'Something wrong');
     }
 }
+
+/**
+ * Possible errors
+ * - Invalid body
+ * - Invalid query
+ * - Not Found
+ */
